@@ -68,6 +68,11 @@ export default function CareerCoach({ userProfile, onSaveSession, coachSessions 
     setIsTyping(true);
 
     try {
+      const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/career-coach"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,15 +94,45 @@ export default function CareerCoach({ userProfile, onSaveSession, coachSessions 
       setMessages(finalMessages);
       onSaveSession(activeSessionId, finalMessages);
 
-    } catch (e) {
-      console.error(e);
-      const errorMsg: CoachMessage = {
-        id: "msg_err_" + Date.now(),
-        text: "I encountered a communication issue. Please verify your connection or try resetting our session.",
+    } catch (e: any) {
+      console.warn("Generating career coach response via client-side offline fallback:", e);
+      
+      // Offline fallback responses based on keywords
+      let responseText = "I am operating in Offline Standalone Mode. I can still help you with career coaching tips! Try asking me about 'resume advice', 'interview tips', 'salary negotiation', or 'skills mapping'.";
+      const lowerText = text.toLowerCase();
+      
+      if (lowerText.includes("resume") || lowerText.includes("cv") || lowerText.includes("ats")) {
+        responseText = `To build an ATS-compliant resume, follow these core pillars:
+1. **Clear Hierarchy**: Use simple, standard sections (Summary, Experience, Projects, Skills, Education). Avoid two-column formats as some parsers misalign them.
+2. **Quantify Impact**: Use the Google Resume Formula: *Accomplished [X] as measured by [Y], by doing [Z]*.
+3. **Keyword Matching**: Incorporate hard technical keywords directly from the job description naturally into your bullet points.`;
+      } else if (lowerText.includes("interview") || lowerText.includes("question") || lowerText.includes("mock")) {
+        responseText = `Excel in technical and behavioral interviews using these strategies:
+1. **Behavioral (STAR Method)**: Structure your stories using Situation, Task, Action, and Result. Make the 'Result' highly measurable.
+2. **Technical/Coding**: Discuss your thought process out loud before coding. Talk about brute-force methods first, then analyze time/space complexity before refining your algorithm.
+3. **System Design**: Establish scope, design high-level components (API Gateway, Load Balancer, DB, Cache), and talk about reliability/scaling trade-offs.`;
+      } else if (lowerText.includes("salary") || lowerText.includes("negotiat") || lowerText.includes("offer") || lowerText.includes("money")) {
+        responseText = `When negotiating an offer:
+1. **Never Give the First Number**: Politely ask for their budget first (e.g., "I'd love to learn more about the complete range of compensation you have budgeted for this role").
+2. **Establish Your Value**: Reference your unique skill alignments and previous performance records.
+3. **Get It In Writing**: Always ask for the complete offer details in writing before making a decision. Keep negotiations positive and collaborative.`;
+      } else if (lowerText.includes("skill") || lowerText.includes("learn") || lowerText.includes("gaps") || lowerText.includes("roadmap")) {
+        responseText = `To bridge your skill gaps:
+1. **Identify the Delta**: Compare your current skills against high-frequency keywords in job descriptions at your dream companies.
+2. **Build Capstones**: Don't just watch videos. Build a real, deployed, full-stack application that solves a real business problem.
+3. **Contribute**: Contribute to open-source or write technical articles to prove your domain expertise.`;
+      }
+
+      const aiMsg: CoachMessage = {
+        id: "msg_ai_" + Date.now(),
+        text: responseText,
         sender: "ai",
         createdAt: new Date().toISOString()
       };
-      setMessages([...newMessages, errorMsg]);
+
+      const finalMessages = [...newMessages, aiMsg];
+      setMessages(finalMessages);
+      onSaveSession(activeSessionId, finalMessages);
     } finally {
       setIsTyping(false);
     }

@@ -24,7 +24,10 @@ import firebaseConfig from "../../firebase-applet-config.json";
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
+
+// Use the database ID from firebase-applet-config.json explicitly to connect to the custom Firestore instance
+const dbId = (firebaseConfig as any).firestoreDatabaseId || "ai-studio-69b2de29-ab54-4ff3-b92e-5d5040ef2a14";
+const db = getFirestore(app, dbId);
 
 // Test connection on boot (required by framework)
 async function testConnection() {

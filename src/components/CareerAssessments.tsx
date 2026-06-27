@@ -76,7 +76,12 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
 
   const evaluateAssessment = async (finalAnswers: string[]) => {
     setIsEvaluating(true);
+    const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
     try {
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/career-assessment/evaluate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +91,7 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
       setAssessmentResult(data);
       onAddPoints(75); // Award dynamic points
     } catch (e) {
-      console.error(e);
+      console.warn("Evaluating assessment via client-side offline fallback:", e);
       // Mock result fallback
       setAssessmentResult({
         persona: "System Architect Visionary",
@@ -101,7 +106,12 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
 
   const handlePredictSalary = async () => {
     setIsPredictingSalary(true);
+    const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
     try {
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/salary-predictor"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +120,7 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
       const data = await res.json();
       setPredictedSalary(data);
     } catch (e) {
-      console.error(e);
+      console.warn("Predicting salary via client-side offline fallback:", e);
       setPredictedSalary({
         low: 120000,
         median: 145000,

@@ -47,7 +47,13 @@ export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPo
 
   const handleGenerateRoadmap = async (trackName: string) => {
     setIsGenerating(true);
+    const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
+
     try {
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/career-roadmap"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,9 +73,78 @@ export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPo
       setActiveRoadmap(newRoadmap);
       onAddPoints(50); // XP Reward
 
-    } catch (e) {
-      console.error(e);
-      showToast?.("Error generating custom roadmap. Please check your network and try again.", "error");
+    } catch (e: any) {
+      console.warn("Generating roadmap via client-side offline fallback:", e);
+      if (e?.message !== "offline_triggered") {
+        showToast?.("Backend server offline. Generating learning plan in offline simulation mode.", "info");
+      }
+
+      // Predefined steps based on track
+      let roadmapSteps: LearningRoadmapStep[] = [
+        {
+          level: "Month 1: Fundamentals & Tooling",
+          focus: `Build core competencies in ${trackName} environments.`,
+          topics: [
+            "Official documentation review",
+            "Structured linting and formatting setups",
+            "Lightweight proof-of-concept components"
+          ],
+          projects: [
+            "Modular UI Component Playground",
+            "Responsive Interactive Cards"
+          ],
+          certifications: [
+            `${trackName} Foundations Certification`
+          ],
+          practiceSchedule: "3 hours per day, focusing on error isolation and unit tests."
+        },
+        {
+          level: "Month 2: High Level Implementations",
+          focus: "Tackle medium-to-complex application logic and custom integrations.",
+          topics: [
+            "Modular state management systems",
+            "Interactive dashboard rendering",
+            "Third-party RESTful integrations"
+          ],
+          projects: [
+            "Analytical Performance Dashboard",
+            "E-commerce product grids"
+          ],
+          certifications: [
+            `Certified ${trackName} Specialist`
+          ],
+          practiceSchedule: "4 hours per day, focusing on custom hooks and async request caching."
+        },
+        {
+          level: "Month 3: Performance, Scaling & Delivery",
+          focus: "Deploy to production platforms, optimize asset delivery, and polish security structures.",
+          topics: [
+            "Load testing and render optimization",
+            "Docker workspace configurations",
+            "CI/CD release workflows"
+          ],
+          projects: [
+            "Enterprise-scale distributed application build",
+            "Custom static site generator"
+          ],
+          certifications: [
+            `Professional ${trackName} Deployment Associate`
+          ],
+          practiceSchedule: "2 hours per day, focusing on security audits and bundle size optimization."
+        }
+      ];
+
+      const newRoadmap: GeneratedRoadmap = {
+        id: "rd_" + Date.now(),
+        title: `${trackName} Mastery Plan`,
+        timeline: "3 Months",
+        steps: roadmapSteps,
+        createdAt: new Date().toISOString()
+      };
+
+      onSaveRoadmap(newRoadmap);
+      setActiveRoadmap(newRoadmap);
+      onAddPoints(50);
     } finally {
       setIsGenerating(false);
     }

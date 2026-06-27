@@ -5,7 +5,15 @@
  */
 
 export function getApiUrl(path: string): string {
-  let baseUrl = (import.meta as any).env?.VITE_API_URL || "";
+  let baseUrl = "";
+  
+  if (typeof window !== "undefined") {
+    baseUrl = localStorage.getItem("custom_api_url") || "";
+  }
+
+  if (!baseUrl) {
+    baseUrl = (import.meta as any).env?.VITE_API_URL || "";
+  }
   
   // If not explicitly set via environment variables, detect if we're on an external host
   if (!baseUrl && typeof window !== "undefined") {

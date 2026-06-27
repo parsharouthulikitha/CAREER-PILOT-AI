@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserProfile } from "../types";
 import { 
   User, 
@@ -8,8 +8,14 @@ import {
   Settings, 
   Target, 
   CheckCircle,
-  Sparkles
+  Sparkles,
+  Database,
+  Wifi,
+  WifiOff,
+  Globe,
+  RefreshCw
 } from "lucide-react";
+import { getApiUrl } from "../lib/api";
 
 interface ProfileProps {
   userProfile: UserProfile;
@@ -26,6 +32,62 @@ export default function Profile({ userProfile, onUpdateProfile, showToast }: Pro
   const [dreamRole, setDreamRole] = useState(userProfile.dreamRole || "");
   const [careerGoals, setCareerGoals] = useState(userProfile.careerGoals || "");
   const [isSaving, setIsSaving] = useState(false);
+
+  // API Backend states
+  const [customApiUrl, setCustomApiUrl] = useState("");
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"untested" | "connected" | "failed">("untested");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCustomApiUrl(localStorage.getItem("custom_api_url") || "");
+      setIsOfflineMode(localStorage.getItem("is_offline_mode") === "true");
+    }
+  }, []);
+
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    setConnectionStatus("untested");
+    try {
+      const endpoint = getApiUrl("/api/health");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+      
+      const res = await fetch(endpoint, {
+        method: "GET",
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (res.ok) {
+        setConnectionStatus("connected");
+        showToast?.("Successfully connected to API server!", "success");
+      } else {
+        setConnectionStatus("failed");
+        showToast?.("Connection failed. Server returned error status.", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      setConnectionStatus("failed");
+      showToast?.("Connection failed. Make sure server is running and CORS is enabled.", "error");
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleSaveApiSettings = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("custom_api_url", customApiUrl.trim());
+      localStorage.setItem("is_offline_mode", String(isOfflineMode));
+      showToast?.("API configuration saved!", "success");
+      
+      // Refresh after saving so entire app uses new endpoint
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -163,6 +225,91 @@ export default function Profile({ userProfile, onUpdateProfile, showToast }: Pro
           className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-200 text-sm focus:outline-none"
           placeholder="Aiming to land a SDE position at Google to architect reliable systems..."
         />
+      </div>
+
+      {/* API Connection & Standalone Offline Practice Mode Configuration Card */}
+      <div className="p-6 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <Database className="h-4.5 w-4.5 text-indigo-500" />
+          <h4 className="font-bold text-slate-800 dark:text-slate-100 text-xs uppercase tracking-wide">Developer API Sandbox Configuration</h4>
+        </div>
+        
+        <p className="text-[11px] text-slate-500 leading-relaxed">
+          If you're running this application on an external host (e.g. Vercel, Netlify) or locally without the Cloud Run background sandbox, the API endpoints might be restricted. Toggle <strong>Standalone Offline Mode</strong> to practice with simulated responses instantly or point to your custom back-end URL.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase">Operational Mode</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsOfflineMode(false)}
+                className={`flex-1 py-2 px-3 rounded-xl border text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  !isOfflineMode 
+                    ? "bg-indigo-500 border-indigo-600 text-white shadow-sm" 
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-850"
+                }`}
+              >
+                <Wifi className="h-3.5 w-3.5" /> API Connected
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOfflineMode(true)}
+                className={`flex-1 py-2 px-3 rounded-xl border text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  isOfflineMode 
+                    ? "bg-amber-500 border-amber-600 text-white shadow-sm" 
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-850"
+                }`}
+              >
+                <WifiOff className="h-3.5 w-3.5" /> Offline Practice
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-[11px] font-semibold text-slate-400 uppercase">Custom Server URL (Override)</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={customApiUrl}
+                onChange={(e) => setCustomApiUrl(e.target.value)}
+                placeholder="e.g. https://my-backend.herokuapp.com"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 pr-4 py-2 text-slate-800 dark:text-slate-200 text-xs focus:outline-none"
+              />
+              <Globe className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleTestConnection}
+              disabled={isTestingConnection || isOfflineMode}
+              className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] uppercase rounded-lg inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+            >
+              {isTestingConnection ? <RefreshCw className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              Test Connection
+            </button>
+            
+            {connectionStatus === "connected" && (
+              <span className="text-[10px] text-emerald-500 font-bold inline-flex items-center gap-0.5">● Connected</span>
+            )}
+            {connectionStatus === "failed" && (
+              <span className="text-[10px] text-rose-500 font-bold inline-flex items-center gap-0.5">● Offline / Blocked</span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveApiSettings}
+            className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase rounded-lg inline-flex items-center cursor-pointer"
+          >
+            Apply API Configuration
+          </button>
+        </div>
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">

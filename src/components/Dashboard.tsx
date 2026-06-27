@@ -54,7 +54,12 @@ export default function Dashboard({ userProfile, interviews, resumes, onNavigate
 
   const fetchDailyTip = async () => {
     setLoadingTip(true);
+    const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
     try {
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/career-coach"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,14 +74,21 @@ export default function Dashboard({ userProfile, interviews, resumes, onNavigate
         setTip(data.text);
       }
     } catch (e) {
-      console.error(e);
+      console.warn("Fetching daily career tip via client-side offline fallback:", e);
+      const fallbackTips = [
+        "In technical coding, describe your brute-force algorithm first to show dynamic analytical thinking, then optimize the time complexity.",
+        "Always research the exact tech stack of your target firm using LinkedIn profiles of their current engineers before you enter the interview room.",
+        "In behavioral responses, dedicate at least 40% of your time to explaining the concrete quantifiable results of your actions.",
+        "Include active, powerful verbs like 'Spearheaded' or 'Automated' instead of passive ones like 'Responsible for' on your resume ATS bulking."
+      ];
+      setTip(fallbackTips[Math.floor(Math.random() * fallbackTips.length)]);
     } finally {
       setLoadingTip(false);
     }
   };
 
   useEffect(() => {
-    // Fetch a fresh tip if desired
+    fetchDailyTip();
   }, []);
 
   return (

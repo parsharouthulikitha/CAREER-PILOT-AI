@@ -29,7 +29,13 @@ export default function SkillGap({ userProfile, showToast }: SkillGapProps) {
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
+    const offlineMode = typeof window !== "undefined" && localStorage.getItem("is_offline_mode") === "true";
+
     try {
+      if (offlineMode) {
+        throw new Error("offline_triggered");
+      }
+
       const res = await fetch(getApiUrl("/api/skill-gap-analysis"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,9 +43,28 @@ export default function SkillGap({ userProfile, showToast }: SkillGapProps) {
       });
       const data = await res.json();
       setGapResult(data);
-    } catch (e) {
-      console.error(e);
-      showToast?.("Error analyzing skill gaps. Please check your network and try again.", "error");
+    } catch (e: any) {
+      console.warn("Analyzing skills matrix via client-side offline fallback:", e);
+      if (e?.message !== "offline_triggered") {
+        showToast?.("Backend server offline. Running matrix analysis in offline simulation mode.", "info");
+      }
+
+      // Predefined gaps based on dreamCompany and dreamRole
+      const cleanCompany = dreamCompany || "Target Tech Firm";
+      const cleanRole = dreamRole || "Senior Developer";
+
+      const fallbackResult: SkillGapResult = {
+        matchingSkills: (currentSkills ? currentSkills.split(",") : ["JavaScript", "React"]).map(s => s.trim()),
+        missingSkills: ["Advanced System Design", "Cloud Native (AWS/GCP)", "CI/CD Pipelines", "Containerization (Docker)", "Distributed Caching (Redis)"],
+        learningRoadmap: [
+          { phase: "Phase 1: Deep Core Systems", timeline: "Weeks 1-4", focus: `Master Scalability and Advanced Architecture for ${cleanRole} at ${cleanCompany}` },
+          { phase: "Phase 2: Docker & Automation", timeline: "Weeks 5-8", focus: "Automate packaging and delivery configurations using Docker containers and CD setups" },
+          { phase: "Phase 3: Redis & Performance", timeline: "Weeks 9-12", focus: "Integrate distributed memory structures like Redis to decrease response and load delays" }
+        ],
+        estimatedCompletion: "3 Months (approx. 10 hours per week)"
+      };
+
+      setGapResult(fallbackResult);
     } finally {
       setIsAnalyzing(false);
     }
