@@ -34,16 +34,12 @@ Whether you're preparing for your first internship or your dream software engine
 
 # 🏗️ Tech Stack
 
-## Frontend
+## Work Flow
 
 * React.js
 * TypeScript
 * Tailwind CSS
 * Vite
-
-## Backend
-
-* FastAPI (or Node.js if applicable)
 
 ## AI
 
@@ -174,27 +170,6 @@ screenshots/
  Database (PostgreSQL)
 ```
 
----
-
-# 🎥 Demo GIF (Optional)
-
-Add a GIF demonstrating:
-
-* User Login
-* Resume Upload
-* AI Mock Interview
-* Coding Challenge
-* AI Feedback
-* Progress Dashboard
-
-Example:
-
-```
-demo.gif
-```
-
----
-
 # 📄 License
 
 This project is licensed under the **MIT License**.
@@ -212,13 +187,9 @@ to any person obtaining a copy of this software...
 
 # 🌐 Live Demo
 
-**Frontend**
+**work flow**
 
 https://cosmic-chimera-c4489f.netlify.app
-
-**Backend**
-
-(Add backend deployment link here)
 
 ---
 
@@ -226,8 +197,10 @@ https://cosmic-chimera-c4489f.netlify.app
 
 ### Team Members
 
+* Ranga Nagendra Yuvaraj
 * Parsharouthu Likitha
-* Team Member 2
+* T. Vivek kumar
+* Charan
 
 ---
 
