@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and career settings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Unique identifier for the user" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoUrl": { "type": "string", "description": "Profile picture URL" },
+        "education": { "type": "string", "description": "Education background" },
+        "experience": { "type": "string", "description": "Professional experience" },
+        "skills": { "type": "string", "description": "Comma-separated or list of skills" },
+        "dreamCompany": { "type": "string", "description": "Target dream company" },
+        "dreamRole": { "type": "string", "description": "Target dream role" },
+        "careerGoals": { "type": "string", "description": "Primary career goals" },
+        "streak": { "type": "integer", "description": "Daily practice streak" },
+        "lastActiveDate": { "type": "string", "description": "ISO date of last activity" },
+        "points": { "type": "integer", "description": "Gamification points earned" }
+      },
+      "required": ["userId", "email"]
+    },
+    "Interview": {
+      "title": "Interview",
+      "description": "AI Mock Interview session data",
+      "type": "object",
+      "properties": {
+        "interviewId": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string" },
+        "mode": { "type": "string", "enum": ["Beginner", "Intermediate", "Expert"] },
+        "type": { "type": "string", "enum": ["Technical", "Behavioral", "HR", "Situational"] },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "currentQuestionIndex": { "type": "integer" },
+        "questions": { "type": "array" },
+        "overallScore": { "type": "integer" },
+        "strengths": { "type": "string" },
+        "weaknesses": { "type": "string" },
+        "improvements": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["interviewId", "userId", "role", "mode", "type", "status"]
+    },
+    "ResumeAnalysis": {
+      "title": "ResumeAnalysis",
+      "description": "ATS and resume review result",
+      "type": "object",
+      "properties": {
+        "resumeId": { "type": "string" },
+        "userId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "score": { "type": "integer" },
+        "formatting": { "type": "string" },
+        "atsCompatibility": { "type": "string" },
+        "grammar": { "type": "string" },
+        "missingSections": { "type": "string" },
+        "weakVerbs": { "type": "string" },
+        "keywordOptimization": { "type": "string" },
+        "suggestions": { "type": "string" },
+        "optimizedResumeText": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["resumeId", "userId", "fileName", "score"]
+    },
+    "CoachSession": {
+      "title": "CoachSession",
+      "description": "AI Career Coach chat log",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "messages": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["sessionId", "userId", "messages"]
+    },
+    "Roadmap": {
+      "title": "Roadmap",
+      "description": "AI-generated personalized learning roadmap",
+      "type": "object",
+      "properties": {
+        "roadmapId": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "level": { "type": "string" },
+        "steps": { "type": "array" },
+        "timeline": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["roadmapId", "userId", "title", "steps"]
+    },
+    "CoverLetter": {
+      "title": "CoverLetter",
+      "description": "Generated cover letters",
+      "type": "object",
+      "properties": {
+        "coverLetterId": { "type": "string" },
+        "userId": { "type": "string" },
+        "company": { "type": "string" },
+        "jobDescription": { "type": "string" },
+        "generatedText": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["coverLetterId", "userId", "company", "generatedText"]
+    },
+    "JobMatch": {
+      "title": "JobMatch",
+      "description": "Job description matching analyzer records",
+      "type": "object",
+      "properties": {
+        "jobMatchId": { "type": "string" },
+        "userId": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "company": { "type": "string" },
+        "matchPercentage": { "type": "integer" },
+        "missingKeywords": { "type": "string" },
+        "missingSkills": { "type": "string" },
+        "suggestions": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["jobMatchId", "userId", "matchPercentage"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Main user details"
+    },
+    "/users/{userId}/interviews/{interviewId}": {
+      "schema": "Interview",
+      "description": "User's mock interviews and history"
+    },
+    "/users/{userId}/resumes/{resumeId}": {
+      "schema": "ResumeAnalysis",
+      "description": "User's resume analyses"
+    },
+    "/users/{userId}/coachSessions/{sessionId}": {
+      "schema": "CoachSession",
+      "description": "User's ChatGPT-style coach history"
+    },
+    "/users/{userId}/roadmaps/{roadmapId}": {
+      "schema": "Roadmap",
+      "description": "User's custom roadmaps"
+    },
+    "/users/{userId}/coverLetters/{coverLetterId}": {
+      "schema": "CoverLetter",
+      "description": "User's cover letters"
+    },
+    "/users/{userId}/jobMatches/{jobMatchId}": {
+      "schema": "JobMatch",
+      "description": "User's job matching metrics"
+    }
+  }
+}

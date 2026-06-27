@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin(uid) {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(uid));
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+
+      match /interviews/{interviewId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+
+      match /resumes/{resumeId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+
+      match /coachSessions/{sessionId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+
+      match /roadmaps/{roadmapId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+
+      match /coverLetters/{coverLetterId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+
+      match /jobMatches/{jobMatchId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin(request.auth.uid));
+      }
+    }
+  }
+}

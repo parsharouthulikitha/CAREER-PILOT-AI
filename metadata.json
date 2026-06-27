@@ -1,0 +1,6 @@
+{
+  "name": "CareerPilot AI",
+  "description": "An interactive, AI-powered career coach providing mock interviews, resume ATS evaluations, interactive learning roadmaps, and salary estimation insights.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

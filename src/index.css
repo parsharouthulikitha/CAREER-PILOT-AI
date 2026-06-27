@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  /* Enforce premium glassmorphism defaults globally */
+  html, body {
+    background-color: #0B0F19 !important;
+    color: #dce3f0 !important;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+/* Glass panel utility classes matching the Frosted Glass and PREP.AI design specs */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
+}
+
+.glass-panel-heavy {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
+  border-radius: 0.75rem !important;
+  padding: 0.625rem 1rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  outline: none !important;
+}
+
+.glass-button-primary {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  transition: all 0.2s ease-in-out !important;
+  border-radius: 0.75rem !important;
+}
+
+.glass-button-primary:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(139, 92, 246, 1) 100%) !important;
+  box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.glass-button-secondary {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #E2E8F0 !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease-in-out !important;
+  border-radius: 0.75rem !important;
+}
+
+.glass-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.01);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Global Selector-based overrides for Frosted Glass Theme integration */
+#resume-panel .bg-white, #resume-panel .dark\:bg-slate-900,
+#mock-interview-panel .bg-white, #mock-interview-panel .dark\:bg-slate-900,
+#coach-panel .bg-white, #coach-panel .dark\:bg-slate-900,
+#gap-panel .bg-white, #gap-panel .dark\:bg-slate-900,
+#roadmap-panel .bg-white, #roadmap-panel .dark\:bg-slate-900,
+#job-match-panel .bg-white, #job-match-panel .dark\:bg-slate-900,
+#history-panel .bg-white, #history-panel .dark\:bg-slate-900,
+#assessment-panel .bg-white, #assessment-panel .dark\:bg-slate-900,
+#profile-panel .bg-white, #profile-panel .dark\:bg-slate-900,
+#admin-panel .bg-white, #admin-panel .dark\:bg-slate-900,
+#auth-screen-canvas .bg-slate-900 {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+  color: #F8FAFC !important;
+  border-radius: 1.5rem !important;
+}
+
+/* Style child buttons and controls cleanly */
+#resume-panel input, #resume-panel textarea, #resume-panel select,
+#mock-interview-panel input, #mock-interview-panel textarea, #mock-interview-panel select,
+#coach-panel input, #coach-panel textarea, #coach-panel select,
+#gap-panel input, #gap-panel textarea, #gap-panel select,
+#roadmap-panel input, #roadmap-panel textarea, #roadmap-panel select,
+#job-match-panel input, #job-match-panel textarea, #job-match-panel select,
+#history-panel input, #history-panel textarea, #history-panel select,
+#assessment-panel input, #assessment-panel textarea, #assessment-panel select,
+#profile-panel input, #profile-panel textarea, #profile-panel select,
+#admin-panel input, #admin-panel textarea, #admin-panel select,
+#auth-screen-canvas input, #auth-screen-canvas textarea, #auth-screen-canvas select {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #F8FAFC !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+#resume-panel input:focus, #resume-panel textarea:focus, #resume-panel select:focus,
+#mock-interview-panel input:focus, #mock-interview-panel textarea:focus, #mock-interview-panel select:focus,
+#coach-panel input:focus, #coach-panel textarea:focus, #coach-panel select:focus,
+#gap-panel input:focus, #gap-panel textarea:focus, #gap-panel select:focus,
+#roadmap-panel input:focus, #roadmap-panel textarea:focus, #roadmap-panel select:focus,
+#job-match-panel input:focus, #job-match-panel textarea:focus, #job-match-panel select:focus,
+#history-panel input:focus, #history-panel textarea:focus, #history-panel select:focus,
+#assessment-panel input:focus, #assessment-panel textarea:focus, #assessment-panel select:focus,
+#profile-panel input:focus, #profile-panel textarea:focus, #profile-panel select:focus,
+#admin-panel input:focus, #admin-panel textarea:focus, #admin-panel select:focus,
+#auth-screen-canvas input:focus, #auth-screen-canvas textarea:focus, #auth-screen-canvas select:focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+  outline: none !important;
+}
+
+/* Headers text and general text color enhancements inside panels */
+#resume-panel h1, #resume-panel h2, #resume-panel h3, #resume-panel h4,
+#mock-interview-panel h1, #mock-interview-panel h2, #mock-interview-panel h3, #mock-interview-panel h4,
+#coach-panel h1, #coach-panel h2, #coach-panel h3, #coach-panel h4,
+#gap-panel h1, #gap-panel h2, #gap-panel h3, #gap-panel h4,
+#roadmap-panel h1, #roadmap-panel h2, #roadmap-panel h3, #roadmap-panel h4,
+#job-match-panel h1, #job-match-panel h2, #job-match-panel h3, #job-match-panel h4,
+#history-panel h1, #history-panel h2, #history-panel h3, #history-panel h4,
+#assessment-panel h1, #assessment-panel h2, #assessment-panel h3, #assessment-panel h4,
+#profile-panel h1, #profile-panel h2, #profile-panel h3, #profile-panel h4,
+#admin-panel h1, #admin-panel h2, #admin-panel h3, #admin-panel h4 {
+  color: #FFFFFF !important;
+}
+
+#resume-panel p, #mock-interview-panel p, #coach-panel p, #gap-panel p,
+#roadmap-panel p, #job-match-panel p, #history-panel p, #assessment-panel p,
+#profile-panel p, #admin-panel p {
+  color: #CBD5E1 !important;
+}
+
+/* Force standard light-theme text colors inside components to stay bright/readable */
+.text-slate-800, .text-slate-700, .text-slate-600 {
+  color: #E2E8F0 !important;
+}
+.text-slate-500, .text-slate-400 {
+  color: #94A3B8 !important;
+}
+.text-slate-900 {
+  color: #FFFFFF !important;
+}
+.bg-slate-50, .bg-slate-100, .bg-slate-100\/50, .bg-slate-50\/50 {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+.border-slate-100, .border-slate-200, .border-slate-100\/50 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Form headers or text inside builder/forms */
+.text-slate-500.uppercase {
+  color: #C084FC !important; /* Elegant light-purple for section uppercase subtitles */
+}
+
+/* Accent icons background fallback */
+.bg-blue-50, .bg-purple-50, .bg-indigo-50, .bg-amber-50, .bg-emerald-50, .bg-red-50 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+.text-blue-600 {
+  color: #60A5FA !important;
+}
+.text-purple-600 {
+  color: #C084FC !important;
+}
+.text-indigo-600 {
+  color: #818CF8 !important;
+}
+.text-amber-600, .text-amber-700 {
+  color: #FBBF24 !important;
+}
+.text-emerald-600 {
+  color: #34D399 !important;
+}
+.text-red-600 {
+  color: #F87171 !important;
+}
