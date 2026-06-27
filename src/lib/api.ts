@@ -5,7 +5,16 @@
  */
 
 export function getApiUrl(path: string): string {
-  const baseUrl = (import.meta as any).env?.VITE_API_URL || "";
+  let baseUrl = (import.meta as any).env?.VITE_API_URL || "";
+  
+  // If not explicitly set via environment variables, detect if we're on an external host
+  if (!baseUrl && typeof window !== "undefined") {
+    const host = window.location.hostname;
+    // If we're on Netlify, GitHub Pages, or another external hosting provider
+    if (host && !host.includes("run.app") && !host.includes("localhost") && !host.includes("127.0.0.1")) {
+      baseUrl = "https://ais-pre-eli7wull6pc3vvvlygnvqr-393363908126.asia-east1.run.app";
+    }
+  }
   
   // Ensure we don't end up with double slashes if both have them
   if (baseUrl) {
