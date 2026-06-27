@@ -14,9 +14,10 @@ import {
 interface ProfileProps {
   userProfile: UserProfile;
   onUpdateProfile: (profile: UserProfile) => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function Profile({ userProfile, onUpdateProfile }: ProfileProps) {
+export default function Profile({ userProfile, onUpdateProfile, showToast }: ProfileProps) {
   const [displayName, setDisplayName] = useState(userProfile.displayName || "");
   const [education, setEducation] = useState(userProfile.education || "");
   const [experience, setExperience] = useState(userProfile.experience || "");
@@ -40,10 +41,10 @@ export default function Profile({ userProfile, onUpdateProfile }: ProfileProps) 
         careerGoals
       };
       await onUpdateProfile(updated);
-      alert("Profile updated successfully!");
+      showToast?.("Profile updated successfully!", "success");
     } catch (e) {
       console.error(e);
-      alert("Error saving profile details.");
+      showToast?.("Error saving profile details.", "error");
     } finally {
       setIsSaving(false);
     }

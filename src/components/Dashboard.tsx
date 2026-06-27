@@ -16,6 +16,7 @@ import {
   Target
 } from "lucide-react";
 import { UserProfile, MockInterviewSession, ResumeAnalysis } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface DashboardProps {
   userProfile: UserProfile;
@@ -54,7 +55,7 @@ export default function Dashboard({ userProfile, interviews, resumes, onNavigate
   const fetchDailyTip = async () => {
     setLoadingTip(true);
     try {
-      const res = await fetch("/api/career-coach", {
+      const res = await fetch(getApiUrl("/api/career-coach"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -9,23 +9,29 @@ import {
   Shield,
   HelpCircle
 } from "lucide-react";
+import { getApiUrl } from "../lib/api";
 
 interface AuthScreenProps {
   onLoginSuccess: (user: any) => void;
   onGuestMode: () => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function AuthScreen({ onLoginSuccess, onGuestMode }: AuthScreenProps) {
+export default function AuthScreen({ onLoginSuccess, onGuestMode, showToast }: AuthScreenProps) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleStandardAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLocalError(null);
     if (!email || !password) {
-      alert("Please fill out all fields.");
+      const msg = "Please fill out all fields.";
+      setLocalError(msg);
+      showToast?.(msg, "error");
       return;
     }
 
@@ -34,7 +40,7 @@ export default function AuthScreen({ onLoginSuccess, onGuestMode }: AuthScreenPr
       const endpoint = isRegistering ? "/api/auth/register" : "/api/auth/login";
       const payload = isRegistering ? { email, password, displayName } : { email, password };
       
-      const res = await fetch(endpoint, {
+      const res = await fetch(getApiUrl(endpoint), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -42,13 +48,18 @@ export default function AuthScreen({ onLoginSuccess, onGuestMode }: AuthScreenPr
       const data = await res.json();
 
       if (res.status === 200 || res.status === 201) {
+        showToast?.(isRegistering ? "Registration successful!" : "Login successful!", "success");
         onLoginSuccess(data.user);
       } else {
-        alert(data.error || "Authentication failed. Please check credentials.");
+        const msg = data.error || "Authentication failed. Please check credentials.";
+        setLocalError(msg);
+        showToast?.(msg, "error");
       }
     } catch (e) {
       console.error(e);
-      alert("Error contacting the authorization server. Proceeding in Guest mode fallback is recommended.");
+      const msg = "Error contacting the authorization server. Proceeding in Guest mode fallback is recommended.";
+      setLocalError(msg);
+      showToast?.(msg, "error");
     } finally {
       setIsLoading(false);
     }
@@ -69,6 +80,13 @@ export default function AuthScreen({ onLoginSuccess, onGuestMode }: AuthScreenPr
           <h1 className="text-xl font-extrabold text-slate-100 tracking-tight">CareerPilot AI</h1>
           <p className="text-xs text-slate-400 max-w-xs mx-auto">Interview coaching, resume ATS alignment, and dynamic skills roadmap advisor.</p>
         </div>
+
+        {localError && (
+          <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-200 text-xs rounded-xl flex items-center justify-between gap-2">
+            <span>{localError}</span>
+            <button type="button" onClick={() => setLocalError(null)} className="text-rose-400 hover:text-rose-200 cursor-pointer font-bold">×</button>
+          </div>
+        )}
 
         <form onSubmit={handleStandardAuth} className="space-y-4 text-xs">
           {isRegistering && (

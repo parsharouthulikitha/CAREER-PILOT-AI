@@ -13,15 +13,17 @@ import {
   ArrowRight
 } from "lucide-react";
 import { JobMatchResult, UserProfile, CoverLetterRecord } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface JobMatchProps {
   userProfile: UserProfile;
   jobMatches: JobMatchResult[];
   onSaveJobMatch: (record: JobMatchResult) => void;
   onSaveCoverLetter: (record: CoverLetterRecord) => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSaveCoverLetter }: JobMatchProps) {
+export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSaveCoverLetter, showToast }: JobMatchProps) {
   // Input states
   const [jobTitle, setJobTitle] = useState(userProfile.dreamRole || "Software Engineer");
   const [company, setCompany] = useState(userProfile.dreamCompany || "Target Company");
@@ -37,12 +39,12 @@ export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSa
 
   const handleAnalyzeJobMatch = async () => {
     if (!jobDescription.trim()) {
-      alert("Please paste the job description first!");
+      showToast?.("Please paste the job description first!", "error");
       return;
     }
     setIsAnalyzing(true);
     try {
-      const res = await fetch("/api/job-match", {
+      const res = await fetch(getApiUrl("/api/job-match"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeText, jobDescription })
@@ -65,7 +67,7 @@ export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSa
 
     } catch (e) {
       console.error(e);
-      alert("Error matching job description. Please verify connection.");
+      showToast?.("Error matching job description. Please verify connection.", "error");
     } finally {
       setIsAnalyzing(false);
     }
@@ -74,7 +76,7 @@ export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSa
   const handleGenerateCoverLetter = async () => {
     setIsGeneratingCoverLetter(true);
     try {
-      const res = await fetch("/api/cover-letter", {
+      const res = await fetch(getApiUrl("/api/cover-letter"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeText, jobDescription, company, role: jobTitle })
@@ -93,7 +95,7 @@ export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSa
 
     } catch (e) {
       console.error(e);
-      alert("Error generating cover letter. Please try again.");
+      showToast?.("Error generating cover letter. Please try again.", "error");
     } finally {
       setIsGeneratingCoverLetter(false);
     }
@@ -101,7 +103,7 @@ export default function JobMatch({ userProfile, jobMatches, onSaveJobMatch, onSa
 
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
+    showToast?.("Copied to clipboard!", "success");
   };
 
   return (

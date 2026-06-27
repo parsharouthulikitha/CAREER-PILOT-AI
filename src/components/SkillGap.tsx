@@ -12,12 +12,14 @@ import {
   RefreshCw
 } from "lucide-react";
 import { SkillGapResult, UserProfile } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface SkillGapProps {
   userProfile: UserProfile;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function SkillGap({ userProfile }: SkillGapProps) {
+export default function SkillGap({ userProfile, showToast }: SkillGapProps) {
   const [dreamCompany, setDreamCompany] = useState(userProfile.dreamCompany || "Google");
   const [dreamRole, setDreamRole] = useState(userProfile.dreamRole || "Software Engineer");
   const [currentSkills, setCurrentSkills] = useState(userProfile.skills || "JavaScript, React, Python");
@@ -28,7 +30,7 @@ export default function SkillGap({ userProfile }: SkillGapProps) {
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     try {
-      const res = await fetch("/api/skill-gap-analysis", {
+      const res = await fetch(getApiUrl("/api/skill-gap-analysis"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentSkills, dreamCompany, dreamRole })
@@ -37,7 +39,7 @@ export default function SkillGap({ userProfile }: SkillGapProps) {
       setGapResult(data);
     } catch (e) {
       console.error(e);
-      alert("Error analyzing skill gaps. Please check your network and try again.");
+      showToast?.("Error analyzing skill gaps. Please check your network and try again.", "error");
     } finally {
       setIsAnalyzing(false);
     }

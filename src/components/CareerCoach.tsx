@@ -12,6 +12,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { CoachMessage, UserProfile } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface CareerCoachProps {
   userProfile: UserProfile;
@@ -67,7 +68,7 @@ export default function CareerCoach({ userProfile, onSaveSession, coachSessions 
     setIsTyping(true);
 
     try {
-      const res = await fetch("/api/career-coach", {
+      const res = await fetch(getApiUrl("/api/career-coach"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

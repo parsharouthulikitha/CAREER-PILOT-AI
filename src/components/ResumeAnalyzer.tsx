@@ -16,15 +16,17 @@ import {
   ChevronRight
 } from "lucide-react";
 import { ResumeAnalysis, UserProfile } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface ResumeAnalyzerProps {
   userProfile: UserProfile;
   resumeAnalyses: ResumeAnalysis[];
   onSaveAnalysis: (analysis: ResumeAnalysis) => void;
   onUpdateSkills: (skills: string) => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function ResumeAnalyzer({ userProfile, resumeAnalyses, onSaveAnalysis, onUpdateSkills }: ResumeAnalyzerProps) {
+export default function ResumeAnalyzer({ userProfile, resumeAnalyses, onSaveAnalysis, onUpdateSkills, showToast }: ResumeAnalyzerProps) {
   const [tab, setTab] = useState<"analyze" | "builder">("analyze");
   
   // Analyzer States
@@ -62,7 +64,7 @@ export default function ResumeAnalyzer({ userProfile, resumeAnalyses, onSaveAnal
     if (!resumeText.trim()) return;
     setIsAnalyzing(true);
     try {
-      const res = await fetch("/api/analyze-resume", {
+      const res = await fetch(getApiUrl("/api/analyze-resume"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeText, targetRole })
@@ -97,7 +99,7 @@ export default function ResumeAnalyzer({ userProfile, resumeAnalyses, onSaveAnal
 
     } catch (e) {
       console.error(e);
-      alert("Error analyzing resume. Please check your network and try again.");
+      showToast?.("Error analyzing resume. Please check your network and try again.", "error");
     } finally {
       setIsAnalyzing(false);
     }
@@ -105,7 +107,7 @@ export default function ResumeAnalyzer({ userProfile, resumeAnalyses, onSaveAnal
 
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
+    showToast?.("Copied to clipboard!", "success");
   };
 
   // Add field functions for builder

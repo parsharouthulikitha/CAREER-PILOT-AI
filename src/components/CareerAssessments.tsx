@@ -11,6 +11,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { UserProfile } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface CareerAssessmentsProps {
   userProfile: UserProfile;
@@ -76,7 +77,7 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
   const evaluateAssessment = async (finalAnswers: string[]) => {
     setIsEvaluating(true);
     try {
-      const res = await fetch("/api/career-assessment/evaluate", {
+      const res = await fetch(getApiUrl("/api/career-assessment/evaluate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers: finalAnswers, dreamRole: userProfile.dreamRole })
@@ -101,7 +102,7 @@ export default function CareerAssessments({ userProfile, onAddPoints }: CareerAs
   const handlePredictSalary = async () => {
     setIsPredictingSalary(true);
     try {
-      const res = await fetch("/api/salary-predictor", {
+      const res = await fetch(getApiUrl("/api/salary-predictor"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: salaryRole, experience: experienceLevel, location: locationRegion })

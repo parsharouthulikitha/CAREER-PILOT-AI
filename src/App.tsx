@@ -45,11 +45,43 @@ import {
   CoachMessage 
 } from "./types";
 
+import {
+  setGuestUserActive,
+  getInterviews,
+  getResumeAnalyses,
+  getRoadmaps,
+  getJobMatches,
+  getCoverLetters,
+  getCoachSessions,
+  saveInterview,
+  saveResumeAnalysis,
+  saveRoadmap,
+  saveJobMatch,
+  saveCoverLetter,
+  saveCoachSession,
+  updateProfile
+} from "./lib/firebase";
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    setToast({ message, type });
+  };
+
+  // Self-clearing toast timer
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   // Core Entity States (Synchronized)
   const [interviews, setInterviews] = useState<MockInterviewSession[]>([]);
@@ -72,9 +104,32 @@ export default function App() {
     }
   }, []);
 
+  // Synchronize database loading on user change
+  useEffect(() => {
+    if (currentUser) {
+      const isGuest = currentUser.uid.startsWith("guest");
+      setGuestUserActive(isGuest);
+      
+      getInterviews().then(setInterviews).catch(err => console.error("Error loading interviews:", err));
+      getResumeAnalyses().then(setResumes).catch(err => console.error("Error loading resumes:", err));
+      getRoadmaps().then(setRoadmaps).catch(err => console.error("Error loading roadmaps:", err));
+      getJobMatches().then(setJobMatches).catch(err => console.error("Error loading job matches:", err));
+      getCoverLetters().then(setCoverLetters).catch(err => console.error("Error loading cover letters:", err));
+      getCoachSessions().then(setCoachSessions).catch(err => console.error("Error loading coach sessions:", err));
+    } else {
+      setInterviews([]);
+      setResumes([]);
+      setRoadmaps([]);
+      setJobMatches([]);
+      setCoverLetters([]);
+      setCoachSessions([]);
+    }
+  }, [currentUser]);
+
   const handleUpdateProfile = (updated: UserProfile) => {
     setCurrentUser(updated);
     localStorage.setItem("careerpilot_user", JSON.stringify(updated));
+    updateProfile(updated).catch(err => console.error("Error updating profile in DB:", err));
   };
 
   const handleAddPoints = (points: number) => {
@@ -153,30 +208,34 @@ export default function App() {
   // State handlers to bubble up modifications from sub-panels
   const handleSaveInterview = (session: MockInterviewSession) => {
     setInterviews([session, ...interviews]);
+    saveInterview(session).catch(err => console.error("Error saving interview to DB:", err));
   };
 
   const handleSaveResumeAnalysis = (analysis: ResumeAnalysis) => {
     setResumes([analysis, ...resumes]);
+    saveResumeAnalysis(analysis).catch(err => console.error("Error saving resume to DB:", err));
   };
 
   const handleSaveRoadmap = (roadmap: GeneratedRoadmap) => {
     setRoadmaps([roadmap, ...roadmaps]);
+    saveRoadmap(roadmap).catch(err => console.error("Error saving roadmap to DB:", err));
   };
 
   const handleSaveJobMatch = (match: JobMatchResult) => {
     setJobMatches([match, ...jobMatches]);
+    saveJobMatch(match).catch(err => console.error("Error saving job match to DB:", err));
   };
 
   const handleSaveCoverLetter = (letter: CoverLetterRecord) => {
     setCoverLetters([letter, ...coverLetters]);
+    saveCoverLetter(letter).catch(err => console.error("Error saving cover letter to DB:", err));
   };
 
   const handleSaveCoachSession = (sessionId: string, messages: CoachMessage[]) => {
     const filtered = coachSessions.filter(s => s.sessionId !== sessionId);
-    setCoachSessions([
-      { sessionId, messages, createdAt: new Date().toISOString() },
-      ...filtered
-    ]);
+    const sessionData = { sessionId, messages, createdAt: new Date().toISOString() };
+    setCoachSessions([sessionData, ...filtered]);
+    saveCoachSession(sessionId, messages).catch(err => console.error("Error saving coach session to DB:", err));
   };
 
   if (!currentUser) {
@@ -184,6 +243,7 @@ export default function App() {
       <AuthScreen 
         onLoginSuccess={handleLoginSuccess}
         onGuestMode={handleGuestMode}
+        showToast={showToast}
       />
     );
   }
@@ -400,6 +460,7 @@ export default function App() {
                       const updated = { ...currentUser, skills: newSkills };
                       handleUpdateProfile(updated);
                     }}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -410,6 +471,7 @@ export default function App() {
                     userProfile={currentUser}
                     onSaveInterview={handleSaveInterview}
                     onAddPoints={handleAddPoints}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -428,6 +490,7 @@ export default function App() {
                 <div id="gap-panel">
                   <SkillGap 
                     userProfile={currentUser}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -439,6 +502,7 @@ export default function App() {
                     roadmaps={roadmaps}
                     onSaveRoadmap={handleSaveRoadmap}
                     onAddPoints={handleAddPoints}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -450,6 +514,7 @@ export default function App() {
                     jobMatches={jobMatches}
                     onSaveJobMatch={handleSaveJobMatch}
                     onSaveCoverLetter={handleSaveCoverLetter}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -477,6 +542,7 @@ export default function App() {
                   <Profile 
                     userProfile={currentUser}
                     onUpdateProfile={handleUpdateProfile}
+                    showToast={showToast}
                   />
                 </div>
               )}
@@ -491,6 +557,36 @@ export default function App() {
         </main>
 
       </div>
+
+      {/* Dynamic Floating Toast Notification overlay */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-[100] max-w-sm w-full px-4"
+          >
+            <div className={`p-4 rounded-2xl shadow-2xl border flex items-start gap-3 backdrop-blur-xl ${
+              toast.type === "success" 
+                ? "bg-emerald-950/90 border-emerald-500/30 text-emerald-200" 
+                : toast.type === "error"
+                ? "bg-rose-950/90 border-rose-500/30 text-rose-200"
+                : "bg-indigo-950/90 border-indigo-500/30 text-indigo-200"
+            }`}>
+              <div className="flex-1 text-xs font-semibold leading-relaxed">
+                {toast.message}
+              </div>
+              <button 
+                onClick={() => setToast(null)} 
+                className="text-slate-400 hover:text-slate-200 cursor-pointer p-0.5"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

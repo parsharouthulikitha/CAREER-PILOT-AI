@@ -19,14 +19,16 @@ import {
   Check
 } from "lucide-react";
 import { MockInterviewSession, InterviewQuestion, UserProfile } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface MockInterviewProps {
   userProfile: UserProfile;
   onSaveInterview: (session: MockInterviewSession) => void;
   onAddPoints: (points: number) => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function MockInterview({ userProfile, onSaveInterview, onAddPoints }: MockInterviewProps) {
+export default function MockInterview({ userProfile, onSaveInterview, onAddPoints, showToast }: MockInterviewProps) {
   // Session Configuration State
   const [role, setRole] = useState(userProfile.dreamRole || "Software Engineer");
   const [mode, setMode] = useState<"Beginner" | "Intermediate" | "Expert">("Intermediate");
@@ -92,7 +94,7 @@ export default function MockInterview({ userProfile, onSaveInterview, onAddPoint
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      alert("Web Speech API recognition is not supported in this browser. Please use Chrome/Edge.");
+      showToast?.("Web Speech API recognition is not supported in this browser. Please use Chrome/Edge.", "info");
       return;
     }
 
@@ -121,7 +123,7 @@ export default function MockInterview({ userProfile, onSaveInterview, onAddPoint
   const handleStartInterview = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch("/api/mock-interview/generate-questions", {
+      const res = await fetch(getApiUrl("/api/mock-interview/generate-questions"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, mode, type })
@@ -163,7 +165,7 @@ export default function MockInterview({ userProfile, onSaveInterview, onAddPoint
 
     } catch (e) {
       console.error(e);
-      alert("Error starting mock interview session. Please check your network and try again.");
+      showToast?.("Error starting mock interview session. Please check your network and try again.", "error");
     } finally {
       setIsGenerating(false);
     }
@@ -176,13 +178,13 @@ export default function MockInterview({ userProfile, onSaveInterview, onAddPoint
     const finalAnswer = currentQuestion.userAnswer || userAnswer;
 
     if (!finalAnswer.trim()) {
-      alert("Please provide an answer before submitting.");
+      showToast?.("Please provide an answer before submitting.", "info");
       return;
     }
 
     setIsSubmittingAnswer(true);
     try {
-      const res = await fetch("/api/mock-interview/evaluate-answer", {
+      const res = await fetch(getApiUrl("/api/mock-interview/evaluate-answer"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -219,7 +221,7 @@ export default function MockInterview({ userProfile, onSaveInterview, onAddPoint
 
     } catch (e) {
       console.error(e);
-      alert("Error evaluating your answer. Please try again.");
+      showToast?.("Error evaluating your answer. Please try again.", "error");
     } finally {
       setIsSubmittingAnswer(false);
     }

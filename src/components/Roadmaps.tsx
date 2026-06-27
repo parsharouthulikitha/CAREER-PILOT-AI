@@ -13,15 +13,17 @@ import {
   ChevronRight
 } from "lucide-react";
 import { GeneratedRoadmap, UserProfile, LearningRoadmapStep } from "../types";
+import { getApiUrl } from "../lib/api";
 
 interface RoadmapsProps {
   userProfile: UserProfile;
   roadmaps: GeneratedRoadmap[];
   onSaveRoadmap: (roadmap: GeneratedRoadmap) => void;
   onAddPoints: (points: number) => void;
+  showToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
-export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPoints }: RoadmapsProps) {
+export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPoints, showToast }: RoadmapsProps) {
   const [selectedTrack, setSelectedTrack] = useState("Full Stack Development");
   const [customTopic, setCustomTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,7 +48,7 @@ export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPo
   const handleGenerateRoadmap = async (trackName: string) => {
     setIsGenerating(true);
     try {
-      const res = await fetch("/api/career-roadmap", {
+      const res = await fetch(getApiUrl("/api/career-roadmap"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: trackName })
@@ -67,7 +69,7 @@ export default function Roadmaps({ userProfile, roadmaps, onSaveRoadmap, onAddPo
 
     } catch (e) {
       console.error(e);
-      alert("Error generating custom roadmap. Please check your network and try again.");
+      showToast?.("Error generating custom roadmap. Please check your network and try again.", "error");
     } finally {
       setIsGenerating(false);
     }

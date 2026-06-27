@@ -33,6 +33,8 @@ async function testConnection() {
   } catch (error: any) {
     if (error instanceof Error && error.message.includes("the client is offline")) {
       console.warn("Firebase client is offline. App will use cached or simulated state.");
+    } else {
+      console.log("Firebase connection checked. Standard hybrid mode fallback active.");
     }
   }
 }
@@ -95,6 +97,10 @@ function saveLocalArray<T>(key: string, list: T[]) {
 // Global state / listeners
 let currentUser: FirebaseUser | null = null;
 let guestUserActive = true;
+
+export function setGuestUserActive(val: boolean) {
+  guestUserActive = val;
+}
 
 // Auth Operations
 export async function registerWithEmail(email: string, password: string, name: string): Promise<UserProfile> {
