@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import fs from "fs";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createServer as createViteServer } from "vite";
 
@@ -39,6 +40,77 @@ async function generateSimpleText(prompt: string, systemInstruction?: string): P
     return `Error generating content: ${error.message || error}`;
   }
 }
+
+// User Persistence JSON Database
+const USERS_FILE = path.join(process.cwd(), "users.json");
+
+function loadUsers() {
+  if (!fs.existsSync(USERS_FILE)) {
+    return [];
+  }
+  try {
+    const data = fs.readFileSync(USERS_FILE, "utf-8");
+    return JSON.parse(data);
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveUsers(users: any[]) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Failed to save users:", e);
+  }
+}
+
+// Auth endpoints
+app.post("/api/auth/register", (req, res) => {
+  const { email, password, displayName } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  const users = loadUsers();
+  const existingUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+  if (existingUser) {
+    return res.status(400).json({ error: "An account with this email already exists." });
+  }
+
+  const newUser = {
+    uid: "usr_" + Date.now() + Math.random().toString(36).substr(2, 4),
+    email,
+    password,
+    displayName: displayName || email.split("@")[0],
+    photoUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName || email)}`,
+    isAdmin: email.toLowerCase().includes("admin") || email.toLowerCase() === "parsharothuvarma@gmail.com"
+  };
+
+  users.push(newUser);
+  saveUsers(users);
+
+  const { password: _, ...userWithoutPassword } = newUser;
+  res.status(201).json({ user: userWithoutPassword });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  const users = loadUsers();
+  const user = users.find(
+    (u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).json({ error: "Invalid email or password." });
+  }
+
+  const { password: _, ...userWithoutPassword } = user;
+  res.json({ user: userWithoutPassword });
+});
 
 // 1. Health check
 app.get("/api/health", (req, res) => {
@@ -576,26 +648,34 @@ Analyze details and compute:
   }
 });
 
-// 10. AI Personality Assessment
-app.post("/api/personality-assessment", async (req, res) => {
-  const { answers } = req.body; // array of answers to career/personality questions
+// 10. AI Personality Assessment (Supports both /api/personality-assessment and /api/career-assessment/evaluate)
+app.post(["/api/personality-assessment", "/api/career-assessment/evaluate"], async (req, res) => {
+  const { answers, dreamRole } = req.body;
 
-  const prompt = `Evaluate these 5 behavioral assessment choices made by a job candidate:
+  const prompt = `Evaluate these 5 behavioral assessment choices made by a job candidate targeting the role of "${dreamRole || "General Professional"}":
 ${answers ? JSON.stringify(answers) : "No choices provided"}
 
 Provide:
-- Identified dominant trait (e.g. Collaborative Leader, Analytical Problem-Solver, etc.)
-- Trait explanation
-- Top 3 career fits
-- Recommended workplace environment
-- Communication style analysis`;
+- persona: A specific, descriptive persona name (e.g. "System Architect Visionary", "Full-Stack Builder")
+- dominantTrait: The same or similar trait name
+- summary: A detailed visual/technical summary of their profile
+- explanation: A detailed explanation of their profile
+- compatibleRoles: A list of 3 highly suited job titles
+- careerFits: The same list of suited job titles
+- suggestedFocus: A specific action plan or study recommendation
+- workplaceEnvironment: Ideal company workspace conditions
+- communicationStyle: Detailed analysis of how they interact in teams`;
 
   try {
     if (!geminiApiKey) {
       return res.json({
+        persona: "System Architect Visionary",
         dominantTrait: "Analytical Strategist",
-        explanation: "You demonstrate an exceptional focus on systematic problem solving, preferring logic, structure, and metric-backed findings over raw intuition.",
-        careerFits: ["Data Scientist", "Solutions Architect", "Operations Researcher"],
+        summary: "You excel at deep architectural reasoning, optimization problems, and scalable system structures.",
+        explanation: "You demonstrate an exceptional focus on systematic problem solving, preferring logic, structure, and metric-backed findings.",
+        compatibleRoles: ["AI Infrastructure Engineer", "Database Specialist", "Technical Lead"],
+        careerFits: ["AI Infrastructure Engineer", "Database Specialist", "Technical Lead"],
+        suggestedFocus: "Prioritize compilers, distributed consensus systems, and machine learning infrastructure models.",
         workplaceEnvironment: "Highly organized, data-driven workspaces with clear metrics and minimal ad-hoc distractions.",
         communicationStyle: "Clear, direct, concise, preferring reports, dashboards, and structured documentation.",
       });
@@ -609,16 +689,24 @@ Provide:
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            persona: { type: Type.STRING },
             dominantTrait: { type: Type.STRING },
+            summary: { type: Type.STRING },
             explanation: { type: Type.STRING },
+            compatibleRoles: { type: Type.ARRAY, items: { type: Type.STRING } },
             careerFits: { type: Type.ARRAY, items: { type: Type.STRING } },
+            suggestedFocus: { type: Type.STRING },
             workplaceEnvironment: { type: Type.STRING },
             communicationStyle: { type: Type.STRING },
           },
           required: [
+            "persona",
             "dominantTrait",
+            "summary",
             "explanation",
+            "compatibleRoles",
             "careerFits",
+            "suggestedFocus",
             "workplaceEnvironment",
             "communicationStyle",
           ],
@@ -634,29 +722,42 @@ Provide:
   }
 });
 
-// 11. Salary Prediction / Guidance
-app.post("/api/salary-prediction", async (req, res) => {
-  const { role, location, experienceLevel } = req.body;
+// 11. Salary Prediction / Guidance (Supports both /api/salary-prediction and /api/salary-predictor)
+app.post(["/api/salary-prediction", "/api/salary-predictor"], async (req, res) => {
+  const { role, location, experienceLevel, experience } = req.body;
+  const targetRole = role || "Software Engineer";
+  const targetLocation = location || "Remote / USA";
+  const targetExp = experienceLevel || experience || "Mid-Level";
 
   const prompt = `Predict a realistic salary range and compensation breakdown for:
-- Role: ${role || "Software Engineer"}
-- Location: ${location || "Remote / USA"}
-- Experience Level: ${experienceLevel || "Mid-Level"}
+- Role: ${targetRole}
+- Location: ${targetLocation}
+- Experience Level: ${targetExp}
 
 Provide:
-- lowRange (USD number or string)
-- highRange (USD number or string)
-- median (USD number or string)
-- benefitsBreakdown (equity, bonus, insurance)
-- salaryNegotiationTips (3 key strategies customized for this level)`;
+- low: an integer representing the lower range of annual salary in USD (e.g. 95000)
+- lowRange: a string representation of the low range (e.g. "95,000")
+- high: an integer representing the higher range of annual salary in USD (e.g. 140000)
+- highRange: a string representation of the high range (e.g. "140,000")
+- median: an integer representing the median annual salary in USD (e.g. 118000)
+- medianRange: a string representation of the median range (e.g. "118,000")
+- bonus: a string describing the benefits breakdown (equity, bonus, insurance)
+- benefitsBreakdown: the same benefits breakdown string
+- growthIndex: a short string describing the market growth trend (e.g. "High (+12% YoY)")
+- salaryNegotiationTips: a list of 3 key strategies customized for this level`;
 
   try {
     if (!geminiApiKey) {
       return res.json({
+        low: 95000,
         lowRange: "95,000",
+        high: 140000,
         highRange: "140,000",
-        median: "118,000",
+        median: 118000,
+        medianRange: "118,000",
+        bonus: "10% annual performance bonus, $15,000 equity vesting over 4 years, comprehensive medical coverage, and 401(k) matching up to 4%.",
         benefitsBreakdown: "10% annual performance bonus, $15,000 equity vesting over 4 years, comprehensive medical coverage, and 401(k) matching up to 4%.",
+        growthIndex: "High (+12% YoY)",
         salaryNegotiationTips: [
           "Leverage competitive market rates with local cost of living metrics.",
           "Do not disclose salary history; instead focus negotiations on value addition and specialized skill premiums.",
@@ -673,13 +774,29 @@ Provide:
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            low: { type: Type.INTEGER },
             lowRange: { type: Type.STRING },
+            high: { type: Type.INTEGER },
             highRange: { type: Type.STRING },
-            median: { type: Type.STRING },
+            median: { type: Type.INTEGER },
+            medianRange: { type: Type.STRING },
+            bonus: { type: Type.STRING },
             benefitsBreakdown: { type: Type.STRING },
+            growthIndex: { type: Type.STRING },
             salaryNegotiationTips: { type: Type.ARRAY, items: { type: Type.STRING } },
           },
-          required: ["lowRange", "highRange", "median", "benefitsBreakdown", "salaryNegotiationTips"],
+          required: [
+            "low",
+            "lowRange",
+            "high",
+            "highRange",
+            "median",
+            "medianRange",
+            "bonus",
+            "benefitsBreakdown",
+            "growthIndex",
+            "salaryNegotiationTips"
+          ],
         },
       },
     });
