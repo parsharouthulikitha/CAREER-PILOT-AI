@@ -1,0 +1,254 @@
+# I Built Interview Memory With Hindsight #
+
+## 🚀 Project Description
+
+** I Built Interview Memory With Hindsight** is an intelligent interview preparation platform that helps students and job seekers prepare for technical and HR interviews through personalized AI-powered coaching.
+
+Unlike traditional interview platforms, our system remembers previous interview sessions, tracks weak topics, and continuously adapts to each user's learning journey. By leveraging **Hindsight** for persistent memory and **cascadeflow** for intelligent runtime routing, the platform delivers smarter, faster, and more personalized interview preparation.
+
+Whether you're preparing for your first internship or your dream software engineering role, the platform provides realistic mock interviews, coding assessments, resume-based questions, and actionable AI feedback.
+
+---
+
+# ✨ Features
+
+* 🤖 AI Mock Interviews
+* 📄 Resume-Based Interview Questions
+* 💻 Coding Assessments
+* 🧠 AI Interview Feedback
+* 📈 Progress Tracking Dashboard
+* 🎯 Weak Topic Detection
+* 📚 Personalized Learning Roadmap
+* 🔥 Daily Practice Challenges
+* 🏢 Company-Specific Interview Preparation
+* 🎙️ Voice AI Mentor
+* 📝 HR Interview Practice
+* ⚡ Real-Time Code Execution
+* 🌐 Multi-Language Coding Support
+* 📌 Notes & Bookmarks
+* 🏆 Streaks & Gamification
+* 🧠 Persistent AI Memory using Hindsight
+* ⚙️ Intelligent AI Routing using cascadeflow
+
+---
+
+# 🏗️ Tech Stack
+
+## Frontend
+
+* React.js
+* TypeScript
+* Tailwind CSS
+* Vite
+
+## Backend
+
+* FastAPI (or Node.js if applicable)
+
+## AI
+
+* OpenAI API
+
+## Agent Memory
+
+* Hindsight
+
+## Runtime Intelligence
+
+* cascadeflow
+
+## Database
+
+* PostgreSQL / Supabase
+
+## Deployment
+
+* Netlify
+* Railway / Render
+
+---
+
+# ⚙️ Installation Steps
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/ai-interview-career-coach.git
+```
+
+## 2. Navigate into the Project
+
+```bash
+cd ai-interview-career-coach
+```
+
+## 3. Install Dependencies
+
+```bash
+npm install
+```
+
+## 4. Configure Environment Variables
+
+Create a `.env` file and add:
+
+```env
+OPENAI_API_KEY=your_api_key
+HINDSIGHT_API_KEY=your_hindsight_key
+DATABASE_URL=your_database_url
+```
+
+## 5. Start the Development Server
+
+```bash
+npm run dev
+```
+
+The application will be available at:
+
+```
+http://localhost:5173
+```
+
+---
+
+# 📸 Screenshots
+
+Add screenshots of:
+
+* Home Page
+* Dashboard
+* AI Mock Interview
+* Coding Assessment
+* Resume Analysis
+* Progress Dashboard
+* Weak Topics
+* AI Feedback
+* Voice Interview
+* Memory Timeline
+
+Example:
+
+```
+screenshots/
+│── home.png
+│── dashboard.png
+│── interview.png
+│── coding.png
+│── feedback.png
+```
+
+---
+
+# 🏛️ Architecture Diagram
+
+```text
+                    User
+                      │
+                      ▼
+          React + Tailwind Frontend
+                      │
+                      ▼
+            FastAPI Backend API
+                      │
+      ┌───────────────┴───────────────┐
+      ▼                               ▼
+ Interview Engine              Resume Analyzer
+      │                               │
+      ▼                               ▼
+ Hindsight Memory              OpenAI API
+      │
+ Stores:
+ • Interview History
+ • Weak Topics
+ • Coding Mistakes
+ • Feedback
+      │
+      ▼
+ cascadeflow Runtime
+ • Model Routing
+ • Budget Control
+ • Latency Optimization
+      │
+      ▼
+ Database (PostgreSQL)
+```
+
+---
+
+# 🎥 Demo GIF (Optional)
+
+Add a GIF demonstrating:
+
+* User Login
+* Resume Upload
+* AI Mock Interview
+* Coding Challenge
+* AI Feedback
+* Progress Dashboard
+
+Example:
+
+```
+demo.gif
+```
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+```
+MIT License
+
+Copyright (c) 2026
+
+Permission is hereby granted, free of charge,
+to any person obtaining a copy of this software...
+```
+
+---
+
+# 🌐 Live Demo
+
+**Frontend**
+
+https://cosmic-chimera-c4489f.netlify.app
+
+**Backend**
+
+(Add backend deployment link here)
+
+---
+
+# 👨‍💻 Contributors
+
+### Team Members
+
+* Parsharouthu Likitha
+* Team Member 2
+
+---
+
+# 💡 Future Improvements
+
+* Real-time Voice Interviews
+* AI Interview Analytics
+* Company Hiring Trends
+* Recruiter Dashboard
+* AI Resume Builder
+* Interview Scheduling
+* Collaborative Mock Interviews
+* Mobile Application
+* Advanced Performance Analytics
+
+---
+
+# ❤️ Acknowledgements
+
+Special thanks to the **Hindsight** and **cascadeflow** teams for enabling persistent AI memory and intelligent runtime optimization, making this project more personalized, efficient, and scalable.
+
+---
+
+## ⭐ If you like this project, don't forget to Star the repository!
